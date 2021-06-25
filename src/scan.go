@@ -98,25 +98,18 @@ func race(Info *ScanInfo){
 		}
 	}()
 
-
 	for {
 			select {
 			case msg:=<-results:
 				fmt.Printf("[+] %s 存在fastjson\n",msg)
-			case msg:=<-wg:
-				fmt.Println(msg)
+			case <-wg:
 				ws--
-				fmt.Printf("21321")
+				if ws==0 {
+					return
+				}
 			}
 
 	}
-	//	select {
-	//	case msg:=<-results:
-	//
-	//	}
-	//
-	//}
-
 }
 
 func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
@@ -158,19 +151,19 @@ func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
 				client := &http.Client{}
 				resp, err := client.Do(req)
 				if err != nil {
+					wg <- true
 					return
 				}
 				defer resp.Body.Close()
 				body, _ := ioutil.ReadAll(resp.Body)
-				//
 				if strings.ContainsAny(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.ContainsAny(string(body), "alibaba") == true && resp.StatusCode!=200 {
-					//fmt.Printf("[+] %s 存在fastjson\n",Url)
-
 					results <- Url
+					wg <- true
 					return
 				}
 			}
-			GetRecords(Info.DnslogCookie,md5str1,Url)
+			GetRecords(Info.DnslogCookie,md5str1,Url,results)
+			wg <- true
 			return
 		}
 
@@ -188,13 +181,13 @@ func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
 
 				var jsonStr = []byte(Playload[i])
 				req, err := http.NewRequest("POST", Url, bytes.NewBuffer(jsonStr))
-				// req.Header.Set("X-Custom-Header", "myvalue")
 				req.Header.Set("User-agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36")
 				req.Header.Set("Accept", "*/*")
 				req.Header.Set("Content-Type", "application/json")
 				req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 				resp, err := client.Do(req)
 				if err != nil {
+					wg <- true
 					return
 				}
 				defer resp.Body.Close()
@@ -202,20 +195,19 @@ func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
 				if strings.ContainsAny(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.ContainsAny(string(body), "alibaba") == true && resp.StatusCode!=200 {
 					//fmt.Printf("[+] %s 存在fastjson\n",Url)
 					results <- Url
+					wg <- true
 					return
 				}
-
 			}
-			GetRecords(Info.DnslogCookie,md5str1,Url)
+			GetRecords(Info.DnslogCookie,md5str1,Url,results)
+			wg <- true
 			return
 		}
-
 	}
-	wg <- true
 	return
 }
 
-func GetRecords(cookie,md5,scanurl string)  {
+func GetRecords(cookie,md5,scanurl string,results chan string)  {
 	time.Sleep(time.Duration(3)*time.Second)
 	url := "http://dnslog.cn/getrecords.php"
 	req, err := http.NewRequest("Get", url,nil)
@@ -233,7 +225,7 @@ func GetRecords(cookie,md5,scanurl string)  {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	if strings.Contains(string(body),md5)==true {
-		fmt.Printf("[+] %s 存在fastjson\n",scanurl)
+		results <- scanurl
 	}
 	return
 }
@@ -246,7 +238,3 @@ func UrlMd5(url string) (md5s string){
 
 
 
-//func test(Url string){
-//
-//	fmt.Println(Url,1)
-//}
