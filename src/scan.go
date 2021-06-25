@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/tls"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,11 @@ import (
 
 func Scan(Info *ScanInfo) {
 
+	if Info.Url == "" && Info.UrlFile  == ""{
+		fmt.Println("Host is none")
+		flag.Usage()
+		os.Exit(0)
+	}
 	if Info.Url != ""{
 		results := VerifyUrl(Info.Url)
 		if results == true{
@@ -44,10 +50,7 @@ func Scan(Info *ScanInfo) {
 		}
 	}
 	GetDomain(Info)
-	fmt.Println(Info.DnslogDomain)
 	race(Info)
-
-
 }
 
 
@@ -61,6 +64,7 @@ func GetDomain(Info *ScanInfo){
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Printf("dnslog.cn 访问失败")
 		return
 	}
 	defer resp.Body.Close()
