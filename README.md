@@ -2,7 +2,7 @@
 
 快速批量扫描fastjson 漏洞
 
-目前只能批量使用报错检查fastjson，其他的还在开发中。有建议或BUG可以告诉一下我。谢谢
+回显报错和DNSlog 批量检测fastjson
 
 用法：
 ```
