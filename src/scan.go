@@ -160,7 +160,7 @@ func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
 				}
 				defer resp.Body.Close()
 				body, _ := ioutil.ReadAll(resp.Body)
-				if strings.ContainsAny(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.ContainsAny(string(body), "alibaba") == true && resp.StatusCode!=200 {
+				if strings.Contains(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.Contains(string(body), "alibaba") == true && resp.StatusCode!=200 {
 					results <- Url
 					wg <- true
 					return
@@ -196,7 +196,7 @@ func WebRequest(Url,results chan string,Info *ScanInfo,wg chan bool){
 				}
 				defer resp.Body.Close()
 				body, _ := ioutil.ReadAll(resp.Body)
-				if strings.ContainsAny(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.ContainsAny(string(body), "alibaba") == true && resp.StatusCode!=200 {
+				if strings.Contains(string(body), "fastjson") == true && resp.StatusCode!=200 || strings.Contains(string(body), "alibaba") == true && resp.StatusCode!=200 {
 					//fmt.Printf("[+] %s 存在fastjson\n",Url)
 					results <- Url
 					wg <- true
